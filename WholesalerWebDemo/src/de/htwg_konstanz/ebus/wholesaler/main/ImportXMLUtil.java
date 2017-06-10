@@ -4,7 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 
 import org.apache.commons.fileupload.FileItem;
@@ -15,11 +14,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.*;
-import javax.xml.validation.SchemaFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +52,9 @@ public class ImportXMLUtil {
 			fileItem = servletFileUpload.parseRequest(myRequest);
 		} catch (FileUploadException e) {
 			System.out.println("CATCH FILE UPLOAD EXCEPTION");
+			errorList.add("Parse Error: "+e);
 			e.printStackTrace();
+			return null;
 		}
 		doc = importXMLFile(fileItem, this.errorList);
 
@@ -97,10 +95,7 @@ public class ImportXMLUtil {
 				doc = documentBuilder.parse(inputStream);
 
 			} catch (SAXException e) {
-				if (isXMLFile) {
-					errorList.add("File upload error SAXException: " + e.getMessage());
-				}
-				errorList.add("File upload error XML File: " + e.getMessage());
+				errorList.add("File upload error SAXException: " + e.getMessage());
 				e.printStackTrace();
 				return null;
 			} catch (IOException e) {

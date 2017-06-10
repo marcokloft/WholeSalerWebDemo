@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import de.htwg_konstanz.ebus.framework.wholesaler.api.bo.BOProduct;
-import de.htwg_konstanz.ebus.framework.wholesaler.api.boa.ProductBOA;
 import de.htwg_konstanz.ebus.framework.wholesaler.api.security.Security;
 import de.htwg_konstanz.ebus.wholesaler.demo.IAction;
 import de.htwg_konstanz.ebus.wholesaler.demo.LoginBean;
@@ -45,7 +43,7 @@ public class ImportXMLAction implements IAction {
 				if(doc==null)	return "xmlImport.jsp";
 				
 				ImportXMLSaveToDB saveXML = new ImportXMLSaveToDB(doc, errorList);
-				saveXML.saveArticles();
+				saveXML.importArticles();
 				
 				return "xmlImport.jsp";				
 			}
