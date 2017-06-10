@@ -21,18 +21,8 @@
 			action="<%=response.encodeURL("controllerservlet?action=" + Constants.ACTION_SHOW_XML_IMPORT)%>"
 			enctype="multipart/form-data">
 			<input type="file" name="<%=Constants.PARAM_XML_FILE%>">
-			<input type="submit" value="submit">
+			<input type="submit" value="Import">
 		</form>
-
-		<p style="color: green">
-			<%
-				String name = (String) request.getAttribute("xmlImported");
-				if (name != null) {
-
-					out.println(name);
-				}
-			%>
-		</p>
 	</div>
 
 

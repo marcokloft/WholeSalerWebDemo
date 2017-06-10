@@ -165,7 +165,7 @@ public class ExportXMLUtil {
 		String path = "Product_catalog_export_" + userId + ".XHTML";
 		File file = new File(this.context.getRealPath(path));
 		String xmlPath = this.context.getRealPath(pathToTransform);
-		String xsltPath = this.context.getRealPath("xhtml.xslt");
+		String xsltPath = this.context.getRealPath("/wsdl/xhtml.xslt");
 		
 		try {
 			TransformerFactory factory = TransformerFactory.newInstance();

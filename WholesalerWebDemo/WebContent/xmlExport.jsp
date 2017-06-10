@@ -16,20 +16,19 @@
 <%@ include file="authentication.jsp" %>
 <%@ include file="navigation.jspfragment" %>
 
-<h1>Export</h1>
+<h1>XML Export</h1>
 <div>
     <form name="xmlExportForm" method="post"
           action="<%= response.encodeURL("controllerservlet?action=" + Constants.ACTION_SHOW_XML_EXPORT)%>">
         <div>
-			<input type="radio" id="one" 	name="exportFormat" value="xml">			<label for="one"> XML</label><br> 
-    		<input type="radio" id="two" 	name="exportFormat" value="xmlDownload">	<label for="two"> Download-XML</label><br> 
-    		<input type="radio" id="three" 	name="exportFormat" value="xhtml">			<label for="three"> xHTML</label><br>
-    		<input type="radio" id="four" 	name="exportFormat" value="xhtmlDownload">	<label for="four"> xHTML-Download</label> 
+			<input type="radio" id="one" 	name="exportType" value="xml">				<label for="one"> XML</label><br> 
+    		<input type="radio" id="two" 	name="exportType" value="xmlDownload">		<label for="two"> Download-XML</label><br> 
+    		<input type="radio" id="three" 	name="exportType" value="xhtml">			<label for="three"> xHTML</label><br>
+    		<input type="radio" id="four" 	name="exportType" value="xhtmlDownload">	<label for="four"> xHTML-Download</label> 
 		</div>
         <div>        
         	<label for="search">Search by short description:</label>
         	<input type="text" name="searchTherm" placeholder="search" id="search"/>
-        	<label>(if empty, all selected)</label>
 		</div>
         <input type="submit" value="Export">
     </form>
