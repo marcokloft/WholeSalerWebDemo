@@ -30,6 +30,10 @@ import de.htwg_konstanz.ebus.framework.wholesaler.api.bo.BOProduct;
 import de.htwg_konstanz.ebus.framework.wholesaler.api.bo.BOSalesPrice;
 import de.htwg_konstanz.ebus.framework.wholesaler.api.boa.ProductBOA;
 
+/**
+ * @author Marco
+ *
+ */
 public class ExportXMLUtil {
 
 	private HttpServletRequest request;
@@ -37,6 +41,11 @@ public class ExportXMLUtil {
 	ServletContext context;
 	private ArrayList<String> errorList;
 
+	/**
+	 * @param request get the request from the servlet
+	 * @param response to answer the request get the Response of the servlet
+	 * @param errorList 
+	 */
 	public ExportXMLUtil(HttpServletRequest request, HttpServletResponse response, ArrayList<String> errorList) {
 		this.request = request;
 		this.response = response;
@@ -44,10 +53,17 @@ public class ExportXMLUtil {
 		this.context = request.getSession().getServletContext();
 	}
 
+	/**
+	 * @return get the errorlist
+	 */
 	public ArrayList<String> getErrorList() {
 		return errorList;
 	}
 
+	/**
+	 * @return returns as new empty document instance
+	 * @throws ParserConfigurationException
+	 */
 	public Document getDocument() throws ParserConfigurationException {
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -55,12 +71,15 @@ public class ExportXMLUtil {
 		return doc;
 	}
 
+	/** Selection of the choosen export type, extracted from the request, plus the searchtherm and starts the exact method
+	 * @param userId get the Extracted userid out of the Servlet
+	 * @return the Filepath to the created File
+	 */
 	public String exportFile(String userId) {
 		String exportType = this.request.getParameter("exportType");
 		String search = this.request.getParameter("searchTherm");
 		String tmpPath = null;
 		String filePath = null;
-		System.out.println(exportType);
 		
 		switch (exportType) {
 		case "xml":
@@ -85,71 +104,75 @@ public class ExportXMLUtil {
 		return filePath;
 	}
 
+	/** Chooses with or without searchtherm search in the DB
+	 * @param searchTherm needed for the search in the shortdescription
+	 * @return document with searched products
+	 */
 	public Document exportCatalog(String searchTherm) {
 		Document doc = null;
-		
-		if (!searchTherm.isEmpty() && searchTherm != null)
-			doc = this.createProductCatalog(searchTherm);
-		else
-			doc = this.createProductCatalog();
-		return doc;
-	}
-
-	public Document createProductCatalog() {
-		Document doc = null;		
 		List<BOProduct> productList = ProductBOA.getInstance().findAll();
 		
-		try {
-			doc = this.getDocument();
-			this.createDom(doc);
-		} catch (ParserConfigurationException e) {
-			this.errorList.add("Parser Exception: createProductCatalog: " + e.getMessage());
-			e.printStackTrace();
-		}
-		for (BOProduct i : productList) {
-			this.appendArticles(doc, i);
-		}
-		return doc;
-	}
+		// Search with Searchtherm
+		if (!searchTherm.isEmpty() && searchTherm != null){
+			
+			String checkString;
+			Boolean valueExist = false;
+			
+			try {
+				doc = this.getDocument();
+				this.createDom(doc);
+			} catch (ParserConfigurationException e) {
+				this.errorList.add("Parser Exception: createProductCatalog(searchTherm): " + e.getMessage());
+				e.printStackTrace();
+			}
+			
+			for (BOProduct i : productList) {
+				checkString = i.product.getShortdescription();
+				if (searchTherm != null && !searchTherm.isEmpty() && checkString.toLowerCase().contains(searchTherm.toLowerCase())) {
+					valueExist = true;
+					this.appendArticles(doc, i);
+				}
+			}
+			if (!valueExist)
+				errorList.add("No article with the short description '" + searchTherm + "' found.");
 
-	public Document createProductCatalog(String search) {
-		Document doc = null;
-		String checkString;
-		Boolean valueExist = false;
-		List<BOProduct> productList = ProductBOA.getInstance().findAll();
-		
-		try {
-			doc = this.getDocument();
-			this.createDom(doc);
-		} catch (ParserConfigurationException e) {
-			this.errorList.add("Parser Exception: createProductCatalog(searchTherm): " + e.getMessage());
-			e.printStackTrace();
-		}
-		
-		for (BOProduct i : productList) {
-			checkString = i.product.getShortdescription();
-			if (search != null && !search.isEmpty() && checkString.toLowerCase().contains(search.toLowerCase())) {
-				valueExist = true;
+			return doc;	
+			
+		} else { //Search the whole Catalog without searchtherm
+			try {
+				doc = this.getDocument();
+				this.createDom(doc);
+			} catch (ParserConfigurationException e) {
+				this.errorList.add("Parser Exception: createProductCatalog: " + e.getMessage());
+				e.printStackTrace();
+			}
+			for (BOProduct i : productList) {
 				this.appendArticles(doc, i);
 			}
+			return doc;			
 		}
-		if (!valueExist)
-			errorList.add("No article with the short description '" + search + "' found.");
-
-		return doc;
 	}
 
+
+	/** Creates an XML file out of an specific DOM (with or without searchtherm)
+	 * @param userId used for the Filename
+	 * @param searchTherm to hand the search to the other Method
+	 * @return the filename to the file
+	 */
 	public String writeDomIntoFile(String userId, String searchTherm) {
-		Document document = this.exportCatalog(searchTherm);
-		String path = "Procuct_catalog_export_" + userId + ".xml";
+		Document doc = this.exportCatalog(searchTherm);
+		String fileName = "Procuct_catalog_export_" + userId + ".xml";
 		File file = null;
 		
 		try {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(document);
-			file = new File(this.context.getRealPath(path));
+			//Create DOM from document
+			DOMSource source = new DOMSource(doc);
+			
+			file = new File(this.context.getRealPath(fileName));
 			StreamResult result = new StreamResult(file);
+			
 			transformer.transform(source, result);
 		} catch (TransformerConfigurationException e) {
 			this.errorList.add("Transform config Error writeDomIntoFile(): " + e.getMessage());
@@ -158,13 +181,18 @@ public class ExportXMLUtil {
 			this.errorList.add("Transform Error writeDomIntoFile(): " + e.getMessage());
 			e.printStackTrace();
 		}
-		return path;
+		return fileName;
 	}
 
-	public String catalogToXHTML(String pathToTransform, String userId) {
-		String path = "Product_catalog_export_" + userId + ".XHTML";
-		File file = new File(this.context.getRealPath(path));
-		String xmlPath = this.context.getRealPath(pathToTransform);
+	/** Creates with the xslt file an xhtml file
+	 * @param filePath
+	 * @param userId
+	 * @return
+	 */
+	public String catalogToXHTML(String filePath, String userId) {
+		String fileName = "Product_catalog_export_" + userId + ".XHTML";
+		File file = new File(this.context.getRealPath(fileName));
+		String xmlPath = this.context.getRealPath(filePath);
 		String xsltPath = this.context.getRealPath("/wsdl/xhtml.xslt");
 		
 		try {
@@ -172,6 +200,7 @@ public class ExportXMLUtil {
 			Transformer transformer;
 			StreamSource xmlSource = new StreamSource(xmlPath);
 			StreamSource xsltSource = new StreamSource(xsltPath);
+			
 			transformer = factory.newTransformer(xsltSource);
 			transformer.transform(xmlSource, new StreamResult(file));
 		} catch (TransformerConfigurationException e) {
@@ -181,15 +210,18 @@ public class ExportXMLUtil {
 			this.errorList.add("Transform Error catalogToXHTML(): " + e.getMessage());
 			e.printStackTrace();
 		}
-		return path;
+		return fileName;
 	}
 	
-	public void createFileForExport(String path) {
+	/** Start download of the file from the filepath parameter
+	 * @param filePath of the file to downlod
+	 */
+	public void createFileForExport(String filePath) {
 		try {
 			this.response.setContentType("text/xml");
-			this.response.setHeader("Content-Disposition", "attachment;filename=" + path);
+			this.response.setHeader("Content-Disposition", "attachment;filename=" + filePath);
 	
-			File file = new File(this.context.getRealPath(path));
+			File file = new File(this.context.getRealPath(filePath));
 			FileInputStream fileIn = new FileInputStream(file);
 			ServletOutputStream out = this.response.getOutputStream();
 
@@ -207,6 +239,10 @@ public class ExportXMLUtil {
 		}
 	}
 
+	/** Creates the rootelemets with the Header Elements in XML in bmecat style
+	 * @param doc empty doc element
+	 * @throws ParserConfigurationException
+	 */
 	public void createDom(Document doc) throws ParserConfigurationException {
 		
 		// ROOT
@@ -214,7 +250,7 @@ public class ExportXMLUtil {
 		root.setAttribute("version", "1.2");
 		root.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		
-		// CHILDELEMENTS
+		// CHILDELEMENTS HEADER
 		Element header = doc.createElement("HEADER");
 		Element catalog = doc.createElement("CATALOG");
 		Element language = doc.createElement("LANGUAGE");
@@ -226,8 +262,8 @@ public class ExportXMLUtil {
 		Element t_new_catalog = doc.createElement("T_NEW_CATALOG");
 		
 		// APPENDCHILDS
-		doc.appendChild(root);
-		root.appendChild(header);
+		doc.appendChild(root); 
+		root.appendChild(header); 
 		header.appendChild(catalog);
 		catalog.appendChild(language);
 		language.insertBefore(doc.createTextNode("deu"), language.getLastChild());
@@ -242,7 +278,12 @@ public class ExportXMLUtil {
 		supplier_name.insertBefore(doc.createTextNode("KN MEDIA STORE"), supplier_name.getLastChild());
 		root.appendChild(t_new_catalog);
 	}
+	
 
+	/** Creates for each article element an article
+	 * @param doc the actual document to edit
+	 * @param product one product out of the productlist
+	 */
 	public void appendArticles(Document doc, BOProduct product) {
 		
 		// ROOT
@@ -280,6 +321,11 @@ public class ExportXMLUtil {
 		this.appendPrice(doc, article_price_details, product);
 	}
 
+	/** Creates the price elements in every article element 
+	 * @param document the actual document to edit
+	 * @param element whole article price details elements
+	 * @param product the actual product
+	 */
 	public void appendPrice(Document document, Element element, BOProduct product) {
 		
 		Element article_price_details = element;

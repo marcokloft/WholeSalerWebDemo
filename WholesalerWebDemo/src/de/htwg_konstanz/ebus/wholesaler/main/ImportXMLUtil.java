@@ -23,6 +23,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Marco
+ *
+ */
 public class ImportXMLUtil {
 
 	HttpServletRequest request;
@@ -36,11 +40,19 @@ public class ImportXMLUtil {
 	 * public Document getDocument(){ return this.doc; }
 	 */
 
+	/**
+	 * @param request get the request from the servlet
+	 * @param errorList
+	 */
 	public ImportXMLUtil(HttpServletRequest request, ArrayList<String> errorList) {
 		this.request = request;
 		this.errorList = errorList;
 	}
 
+	/** import of the file, call the method which creates dom document
+	 * @param myRequest Servlet gets the imported file
+	 * @return dom tree of the imported xml file
+	 */
 	public Document createFile(HttpServletRequest myRequest) {
 		Document doc = null;
 		List<FileItem> fileItem = null;
@@ -61,6 +73,11 @@ public class ImportXMLUtil {
 		return doc;
 	}
 
+	/**  Checks the imported file whether it is an xml file or not
+	 * @param fileItems Imported file as a list (parsed file upload)
+	 * @param errorList
+	 * @return dom document
+	 */
 	public Document importXMLFile(List<FileItem> fileItems, ArrayList<String> errorList) {
 
 		Document doc = null;
@@ -79,10 +96,8 @@ public class ImportXMLUtil {
 			errorList.add("Import error: Imported File is not an XML File");
 			return null;
 		}
-		if (!isXMLFile && !isNoFile) {
-			errorList.add("Import error: Wrong document type");
-			return null;
-		}
+		
+		//Dom parser 
 
 		for (FileItem fileItem : fileItems) {
 
@@ -95,7 +110,7 @@ public class ImportXMLUtil {
 				doc = documentBuilder.parse(inputStream);
 
 			} catch (SAXException e) {
-				errorList.add("File upload error SAXException: " + e.getMessage());
+				errorList.add("File upload error SAXException (file is not well formed): " + e.getMessage());
 				e.printStackTrace();
 				return null;
 			} catch (IOException e) {
@@ -108,6 +123,7 @@ public class ImportXMLUtil {
 				return null;
 			}
 		}
+		
 		// XSD Validator
 		isValid = validateXSD(doc, errorList);
 
@@ -119,6 +135,11 @@ public class ImportXMLUtil {
 		return doc;
 	}
 
+	/** validates the xml file with the given BME_Cat xsd file
+	 * @param doc dom file
+	 * @param errorlist
+	 * @return if the file is valid or not
+	 */
 	public boolean validateXSD(Document doc, ArrayList<String> errorlist) {
 
 		File schemaFile = new File("bmecat_new_catalog_1_2_simple_without_NS.xsd");

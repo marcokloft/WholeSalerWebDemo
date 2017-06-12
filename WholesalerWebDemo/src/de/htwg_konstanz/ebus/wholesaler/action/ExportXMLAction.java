@@ -12,6 +12,10 @@ import de.htwg_konstanz.ebus.wholesaler.demo.util.Constants;
 import de.htwg_konstanz.ebus.wholesaler.main.ExportXMLUtil;
 
 
+/**
+ * @author Marco
+ *
+ */
 public class ExportXMLAction implements IAction {
 
 	public ExportXMLAction() {
@@ -33,7 +37,7 @@ public class ExportXMLAction implements IAction {
 			if (Security.getInstance().isUserAllowed(loginBean.getUser(), Security.RESOURCE_ALL,
 					Security.ACTION_READ)) {
 
-				// our code
+				//---- Creates export util Instance and returns path to file or Errorlist
 				ExportXMLUtil Export = new ExportXMLUtil(request, response, errorList);
 				String userId = loginBean.getUser().getLogin();
 				String pathToFile = Export.exportFile(userId);
@@ -42,7 +46,7 @@ public class ExportXMLAction implements IAction {
 					return pathToFile;
 				else
 					return "xmlExport.jsp";
-
+				//----
 			} else {
 				// authorization failed -> show error message
 				errorList.add("You are not allowed to perform this action!");

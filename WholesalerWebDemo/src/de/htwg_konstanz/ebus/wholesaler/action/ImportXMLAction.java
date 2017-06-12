@@ -13,6 +13,10 @@ import de.htwg_konstanz.ebus.wholesaler.main.*;
 
 import org.w3c.dom.*;
 
+/**
+ * @author Marco
+ *
+ */
 public class ImportXMLAction implements IAction {
 	
 	public ImportXMLAction(){
@@ -36,16 +40,18 @@ public class ImportXMLAction implements IAction {
 			if (Security.getInstance().isUserAllowed(loginBean.getUser(), Security.RESOURCE_ALL, Security.ACTION_READ))
 			{
 				
-				//our code
+				//---- creates instance of Import Util(Validator) and Checks file
 				ImportXMLUtil Import = new ImportXMLUtil(request, errorList);
 				doc = Import.createFile(request);
 				
 				if(doc==null)	return "xmlImport.jsp";
 				
+				//-- If checked File OK then save to DB
 				ImportXMLSaveToDB saveXML = new ImportXMLSaveToDB(doc, errorList);
 				saveXML.importArticles();
 				
-				return "xmlImport.jsp";				
+				return "xmlImport.jsp";
+				//----
 			}
 			else
 			{
