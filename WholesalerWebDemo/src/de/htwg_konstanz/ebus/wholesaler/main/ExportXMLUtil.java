@@ -302,8 +302,9 @@ public class ExportXMLUtil {
 		Element article_price_details = doc.createElement("ARTICLE_PRICE_DETAILS");
 		
 		// APPEND CHILDS
+		String tempStr = product.getOrderNumberSupplier();
 		t_new_catalog.appendChild(article);
-		supplier_aid.insertBefore(doc.createTextNode(product.getOrderNumberSupplier()),supplier_aid.getLastChild());
+		supplier_aid.insertBefore(doc.createTextNode(tempStr.substring(2)),supplier_aid.getLastChild());
 		article.appendChild(supplier_aid);
 		article.appendChild(article_details);
 		description_short.insertBefore(doc.createTextNode(product.getShortDescription()),description_short.getLastChild());

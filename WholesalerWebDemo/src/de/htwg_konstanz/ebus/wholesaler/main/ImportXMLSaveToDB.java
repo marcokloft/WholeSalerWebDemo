@@ -101,14 +101,14 @@ public class ImportXMLSaveToDB {
 	 */
 	public static void importProducts(Document doc, XPath xpath) {
 		
-		//probably failure
 		final String longDescriptionXPATH = "/BMECAT/T_NEW_CATALOG/ARTICLE/ARTICLE_DETAILS/DESCRIPTION_LONG";
 		final String shortDescriptionXPATH = "/BMECAT/T_NEW_CATALOG/ARTICLE/ARTICLE_DETAILS/DESCRIPTION_SHORT";
 		final String orderNumberSupplierXPATH = "/BMECAT/T_NEW_CATALOG/ARTICLE/SUPPLIER_AID/text()";
 		String shortDescriptionValue;
 		String longDescriptionValue;
 		String supplierAidValue;
-		System.out.println("Changed : 1");
+		String supplierAidValueNew;
+		System.out.println("Changed : 5");
 		try {
 			NodeList supplierAid = (NodeList) xpath.compile(orderNumberSupplierXPATH).evaluate(doc,XPathConstants.NODESET);
 			NodeList shortDescriptions = (NodeList) xpath.compile(shortDescriptionXPATH).evaluate(doc,XPathConstants.NODESET);
@@ -116,16 +116,17 @@ public class ImportXMLSaveToDB {
 
 			for (int i = 0; i < shortDescriptions.getLength(); i++) {
 				supplierAidValue = supplierAid.item(i).getNodeValue();
-				
-				if (ProductBOA.getInstance().findByOrderNumberSupplier(supplierAidValue) == null) {
+				supplierAidValueNew = SupplierBOA.getInstance().findByCompanyName(supplierName).get(0).getSupplierNumber() + supplierAidValue;
+								
+				if (ProductBOA.getInstance().findByOrderNumberSupplier(supplierAidValueNew) == null) {
 
 					BOProduct boProduct = new BOProduct();
 
 					shortDescriptionValue = shortDescriptions.item(i).getFirstChild().getNodeValue();
 					longDescriptionValue = longDescriptions.item(i).getFirstChild().getNodeValue();
 					
-					boProduct.setOrderNumberSupplier(supplierAidValue);
-					boProduct.setOrderNumberCustomer(supplierAidValue);
+					boProduct.setOrderNumberSupplier(supplierAidValueNew);
+					boProduct.setOrderNumberCustomer(supplierAidValueNew);
 					boProduct.setShortDescription(shortDescriptionValue);
 					boProduct.setLongDescription(longDescriptionValue);
 					boProduct.setInventoryAmount(10);
